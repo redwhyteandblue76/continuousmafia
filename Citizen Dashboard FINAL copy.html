@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citizen Dashboard</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .form-section {
+      background-color: #222;
+      padding: 20px;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    label {
+      text-align: center;
+      width: 100%;
+      margin-bottom: 10px;
+      display: block;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #fff;
+      border-radius: 4px;
+      background-color: #444;
+      color: #fff;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #555;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      font-family: 'Courier New', monospace;
+    }
+    button:hover {
+      background-color: #444;
+    }
+    .output {
+      margin-top: 3px;
+      padding: 10px;
+      border: 1px solid #fff;
+      background-color: #333;
+      border-radius: 4px;
+      font-weight: bold;
+      white-space: pre-wrap;
+      width: 100%;
+      text-align: center;
+    }
+    #loading, #loading2, #loading3, #loadingTarget {
+      display: none;
+      color: #fff;
+      font-weight: bold;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #fff;
+      background-color: #333;
+      border-radius: 4px;
+      width: 100%;
+      text-align: center;
+    }
+    /* Loading bar styles */
+    #eliminationLoading {
+      width: 100%;
+      height: 10px;
+      background-color: #444;
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+      margin-top: 10px;
+    }
+    #eliminationProgress {
+      height: 100%;
+      width: 0;
+      background-color: #76c7c0;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <h2>Citizen Dashboard</h2>
+    
+    <!-- Step One -->
+    <div class="form-section" id="myForm">
+      <label for="codename1">Input your codename:</label>
+      <input type="text" id="codename1" required>
+      <button onclick="verifyCitizen('verifyCitizen1', 'codename1', 'stepOneMessage')">Verify</button>
+      <div id="stepOneMessage" class="output"></div>
+      <div id="loading" class="output">Loading...</div>
+    </div>
+
+    <!-- Step Two -->
+    <div class="form-section" id="myForm2" style="display: none;">
+      <label for="codename2">Input second player's codename:</label>
+      <input type="text" id="codename2" required>
+      <button onclick="verifyCitizen('verifyCitizen2', 'codename2', 'stepTwoMessage')">Verify</button>
+      <div id="stepTwoMessage" class="output"></div>
+      <div id="loading2" class="output">Loading...</div>
+    </div>
+
+    <!-- Step Three -->
+    <div class="form-section" id="myForm3" style="display: none;">
+      <label for="codename3">Input third player's codename:</label>
+      <input type="text" id="codename3" required>
+      <button onclick="verifyCitizen('verifyCitizen3', 'codename3', 'stepThreeMessage')">Verify</button>
+      <div id="stepThreeMessage" class="output"></div>
+      <div id="loading3" class="output">Loading...</div>
+    </div>
+
+    <!-- Step Four -->
+    <div class="form-section" id="targetSection" style="display: none;">
+      <label for="targetName">Input a player's name to guess:</label>
+      <input type="text" id="targetName" required>
+      <button onclick="verifyTarget()">Verify Target</button>
+      <div id="targetMessage" class="output"></div>
+      <div id="loadingTarget" class="output">Loading...</div>
+    </div>
+
+    <!-- Final Step -->
+    <div class="form-section" id="confirmationSection" style="display: none;">
+      <button id="eliminateButton" onclick="eliminateTarget()">Eliminate Target</button>
+      <div id="eliminationLoading">
+        <div id="eliminationProgress"></div>
+      </div>
+      <div id="finalMessage" class="output"></div>
+    </div>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxbWeMUE0_6MM8FDrIqfKfjXQbviuXK2FOHnAEZE0KqIeFHC4QT4YfhFmuZfa2sb2nW/exec";
+
+    async function verifyCitizen(action, codenameId, messageId) {
+      const codename = document.getElementById(codenameId).value;
+
+      // Show appropriate loading indicator
+      if (action === 'verifyCitizen1') {
+        document.getElementById('loading').style.display = 'block';
+      } else if (action === 'verifyCitizen2') {
+        document.getElementById('loading2').style.display = 'block';
+      } else if (action === 'verifyCitizen3') {
+        document.getElementById('loading3').style.display = 'block';
+      }
+
+      const res = await fetch(`${scriptURL}?action=${action}&codename=${codename}`);
+      const data = await res.json();
+
+      // Hide appropriate loading indicator
+      if (action === 'verifyCitizen1') {
+        document.getElementById('loading').style.display = 'none';
+      } else if (action === 'verifyCitizen2') {
+        document.getElementById('loading2').style.display = 'none';
+      } else if (action === 'verifyCitizen3') {
+        document.getElementById('loading3').style.display = 'none';
+      }
+
+      document.getElementById(messageId).textContent = data.error || 'Verification successful!';
+
+      if (data.success) {
+        if (action === 'verifyCitizen1') {
+          document.getElementById('myForm2').style.display = 'block';
+          document.querySelector('#myForm button').style.display = 'none'; // Hide button
+        } else if (action === 'verifyCitizen2') {
+          document.getElementById('myForm3').style.display = 'block';
+          document.querySelector('#myForm2 button').style.display = 'none'; // Hide button
+        } else if (action === 'verifyCitizen3') {
+          document.getElementById('targetSection').style.display = 'block';
+          document.querySelector('#myForm3 button').style.display = 'none'; // Hide button
+        }
+      }
+    }
+
+    async function verifyTarget() {
+      const targetOfficialName = document.getElementById('targetName').value;
+      document.getElementById('loadingTarget').style.display = 'block'; // Show loading for target
+      const res = await fetch(`${scriptURL}?action=verifyTarget&targetOfficialName=${targetOfficialName}`);
+      const data = await res.json();
+      document.getElementById('loadingTarget').style.display = 'none'; // Hide loading for target
+      document.getElementById('targetMessage').textContent = data.error || 'Target verified!';
+      if (data.success) {
+        document.getElementById('confirmationSection').style.display = 'block'; // Show confirmation section
+      }
+    }
+
+    async function eliminateTarget() {
+      const codename1 = document.getElementById('codename1').value;
+      const codename2 = document.getElementById('codename2').value;
+      const codename3 = document.getElementById('codename3').value;
+      const targetOfficialName = document.getElementById('targetName').value;
+
+      // Show loading bar
+      document.getElementById('eliminationLoading').style.display = 'block';
+      const progressBar = document.getElementById('eliminationProgress');
+      progressBar.style.width = '0%'; // Reset progress
+
+      // Send the request
+      const res = await fetch(`${scriptURL}?action=eliminateTarget&codename=${codename1}&targetOfficialName=${targetOfficialName}&codename2=${codename2}&codename3=${codename3}`);
+      
+      // Simulate loading progress
+      let width = 0;
+      const loadingInterval = setInterval(() => {
+        if (width >= 100) {
+          clearInterval(loadingInterval);
+        } else {
+          width++;
+          progressBar.style.width = width + '%';
+        }
+      }, 30); // Adjust speed as needed
+
+      const data = await res.json();
+      clearInterval(loadingInterval); // Stop loading simulation
+      progressBar.style.width = '100%'; // Complete the loading bar
+
+      // Hide loading bar after a brief delay
+      setTimeout(() => {
+        document.getElementById('eliminationLoading').style.display = 'none'; // Hide loading bar
+      }, 300); // Adjust the duration as needed
+
+      document.getElementById('finalMessage').textContent = data.success || data.error;
+      if (data.success) {
+        document.querySelector('#confirmationSection button').style.display = 'none'; // Hide button
+      }
+    }
+  </script>
+
+</body>
+</html>

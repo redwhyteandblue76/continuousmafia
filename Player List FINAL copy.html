@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Status</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            width: 100%; /* Allow container to fill the width */
+            padding: 0 20px; /* Add horizontal padding */
+        }
+        .status-list {
+            background-color: #222;
+            padding: 20px;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 100%; /* Make the status list full width */
+            flex-grow: 1; /* Allow list to grow and fit the screen */
+            margin-top: 10px;
+            overflow-y: auto; /* Enable scrolling if content overflows */
+            text-align: left;
+        }
+        .status-item {
+            margin-bottom: 16px;
+        }
+        .refresh-button {
+            padding: 10px 20px;
+            background-color: gray;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 20px 0; /* Add margin above and below the button */
+        }
+        .refresh-button:hover {
+            background-color: darkgray;
+        }
+        .loading-bar {
+            width: 100%;
+            height: 4px;
+            background: #555;
+            margin-top: 10px;
+            display: none;
+        }
+        .loading-bar div {
+            height: 100%;
+            width: 0;
+            background: green; /* Change to green */
+            transition: width 1s;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div style="margin-top: 20px;"></div> <!-- Space buffer above the button -->
+        <button class="refresh-button" id="refreshButton">Refresh</button>
+        <div class="loading-bar" id="loadingBar"><div></div></div>
+        <div class="status-list" id="statusList">Loading...</div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            document.getElementById('loadingBar').style.display = 'block';
+            const loadingDiv = document.querySelector('.loading-bar div');
+            loadingDiv.style.width = '0%';
+
+            // Simulate loading bar animation
+            setTimeout(() => {
+                loadingDiv.style.width = '100%';
+            }, 100);
+
+            try {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbyEa9E6yvRZqLFoGYDB67D3wsUnecd9WgoH6M3if3iVsH7vS-5zqrVPDycamzG4LuNL/exec');
+                const data = await response.json();
+
+                // Sort the data
+                const sortedData = data.sort((a, b) => {
+                    const statusOrder = { active: 1, eliminated: 2 };
+                    const statusComparison = statusOrder[a.status] - statusOrder[b.status];
+                    if (statusComparison !== 0) return statusComparison;
+                    return a.official_name.localeCompare(b.official_name);
+                });
+
+                // Create status list
+                const statusList = sortedData.map(person => 
+                    `<div class="status-item">${person.official_name} is currently ${person.status}</div>`
+                ).join('');
+
+                document.getElementById('statusList').innerHTML = statusList;
+
+            } catch (error) {
+                document.getElementById('statusList').innerHTML = 'Error loading data.';
+                console.error('Fetch error:', error);
+            } finally {
+                // Hide loading bar after fetching data
+                setTimeout(() => {
+                    loadingDiv.style.width = '0%';
+                    document.getElementById('loadingBar').style.display = 'none';
+                }, 1000);
+            }
+        }
+
+        // Fetch data on page load
+        window.onload = fetchData;
+
+        // Refresh button functionality
+        document.getElementById('refreshButton').onclick = fetchData;
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detective Dashboard</title>
+  <style>
+    body {
+        font-family: 'Courier New', monospace;
+        background-color: #000;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    #container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .form-section {
+        background-color: #222;
+        padding: 20px;
+        border: 2px solid #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        width: 300px;
+        margin-bottom: 20px;
+    }
+    label {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 10px;
+        display: block;
+    }
+    input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #fff;
+        border-radius: 4px;
+        background-color: #444;
+        color: #fff;
+        margin-top: 10px;
+    }
+    button {
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #555;
+        color: #fff;
+        cursor: pointer;
+        margin-top: 10px;
+        width: 100%;
+        font-family: 'Courier New', monospace;
+    }
+    button:hover {
+        background-color: #444;
+    }
+    .output {
+        margin-top: 3px;
+        padding: 10px;
+        border: 1px solid #fff;
+        background-color: #333;
+        border-radius: 4px;
+        font-weight: bold;
+        white-space: pre-wrap;
+        width: 100%;
+        text-align: center;
+    }
+    #loading {
+        display: none;
+        color: #fff;
+        font-weight: bold;
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #fff;
+        background-color: #333;
+        border-radius: 4px;
+        width: 100%;
+        text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div id="container">
+  <h2>Detective Dashboard</h2>
+
+  <!-- Step One -->
+  <div class="form-section" id="myForm">
+    <label for="codename">Input your codename:</label>
+    <input type="text" id="codename" required>
+    <button onclick="verifyDetective()">Verify</button>
+    <div id="stepOneMessage" class="output"></div>
+  </div>
+  
+  <div id="loading" class="output">Loading...</div>
+
+  <!-- Step Two -->
+  <div class="form-section" id="targetSection" style="display: none;">
+    <label for="targetOfficialName">Input target's real name:</label>
+    <input type="text" id="targetOfficialName" required>
+    <button onclick="verifyTarget()">Verify Target</button>
+    <div id="stepTwoMessage" class="output"></div>
+  </div>
+
+  <!-- Final Step -->
+  <div class="form-section" id="confirmationSection" style="display: none;">
+    <button onclick="guessTarget()">Guess this player</button>
+    <div id="finalMessage" class="output"></div>
+  </div>
+</div>
+
+<script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwXH4rdw_TieklQ2PzYbkTqazMW9lk9JpGZeJwci72hatp3q0-bsfTk_9ox3lPAmpxpFg/exec";
+
+  async function verifyDetective() {
+    const codename = document.getElementById('codename').value;
+    document.getElementById('loading').style.display = 'block';
+    
+    const res = await fetch(`${scriptURL}?action=verifyDetective&codename=${codename}`);
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('stepOneMessage').textContent = data.error || 'Codename verified';
+    
+    if (data.success) {
+      document.getElementById('targetSection').style.display = 'block'; // Show target section
+      // Hide the verify button
+      document.querySelector('#myForm button').style.display = 'none';
+    }
+  }
+
+  async function verifyTarget() {
+    const targetOfficialName = document.getElementById('targetOfficialName').value;
+    document.getElementById('loading').style.display = 'block';
+    
+    const res = await fetch(`${scriptURL}?action=verifyTarget&targetOfficialName=${targetOfficialName}`);
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('stepTwoMessage').textContent = data.error || 'Target name verified';
+    
+    if (data.success) {
+      document.getElementById('confirmationSection').style.display = 'block'; // Show confirmation section
+      // Hide the verify target button
+      document.querySelector('#targetSection button').style.display = 'none';
+    }
+  }
+
+  async function guessTarget() {
+    const codename = document.getElementById('codename').value;
+    const targetOfficialName = document.getElementById('targetOfficialName').value;
+    document.getElementById('loading').style.display = 'block';
+    
+    const res = await fetch(`${scriptURL}?action=guessTarget&codename=${codename}&targetOfficialName=${targetOfficialName}`);
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('finalMessage').textContent = data.success || data.error;
+    
+    if (data.success) {
+      // Hide the guess target button
+      document.querySelector('#confirmationSection button').style.display = 'none';
+      // Auto-refresh if the guess was successful
+      setTimeout(() => {
+        location.reload(); // Refresh the page after 3 seconds
+      }, 3000); // Adjust the time as needed
+    }
+  }
+</script>
+
+</body>
+</html>
