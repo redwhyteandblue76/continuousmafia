@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuous Mafia Game - Setup</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #myForm, #confirmation {
+            background-color: #222;
+            padding: 20px;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            text-align: center;
+        }
+        label {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+            display: block;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            background-color: #444;
+            color: #fff;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #555;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-family: 'Courier New', monospace;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #fff;
+            background-color: #333;
+            border-radius: 4px;
+            font-weight: bold;
+            white-space: pre-wrap;
+            width: 300px;
+            text-align: center;
+        }
+        #confirmation {
+            display: none;
+        }
+        /* Add loading bar styles */
+        #loadingBarContainer {
+            width: 100%;
+            background-color: #333;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        #loadingBar {
+            height: 10px;
+            width: 0;
+            background-color: #4CAF50;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <div id="myForm">
+            <h2>SIGN UP FOR THE GAME!</h2>
+            <label for="realName">Real First and Last Name (this MUST be accurate):</label>
+            <input type="text" id="realName" required>
+            <label for="codename"><br><br>Personal Codename (please make this super creative and impossible to figure out randomly by another player and NO SPACES!):</label>
+            <input type="text" id="codename" required>
+            <label for="phone"><br><br>Phone (in case I need to contact you):</label>
+            <input type="tel" id="phone" required>
+            <label for="hall"><br><br>Select Hall:</label>
+            <select id="hall" required>
+                <option value="25-3">25-3</option>
+                <option value="27-3">27-3</option>
+            </select>
+            <button id="submitButton">Submit</button>
+        </div>
+
+        <div id="confirmation">
+            <h2>Confirm Your Information</h2>
+            <div id="confirmOutput"></div>
+            <button id="confirmButton">Confirm</button>
+            <button id="editButton">Edit</button>
+            <!-- Loading bar container -->
+            <div id="loadingBarContainer">
+                <div id="loadingBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('submitButton').addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const realName = document.getElementById('realName').value;
+            const codename = document.getElementById('codename').value;
+            const phone = document.getElementById('phone').value;
+            const hall = document.getElementById('hall').value;
+
+            const confirmationMessage = `
+                Please confirm that this information is correct:     *
+                Real Name: ${realName}    *
+                Codename: ${codename}    *
+                Phone: ${phone}     *
+                Hall: ${hall}     *
+                Screenshot this page for your records but do not reveal your codename to anyone.
+            `;
+
+            document.getElementById('confirmOutput').textContent = confirmationMessage;
+            document.getElementById('myForm').style.display = 'none';
+            document.getElementById('confirmation').style.display = 'block';
+        });
+
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            const realName = document.getElementById('realName').value;
+            const codename = document.getElementById('codename').value;
+            const phone = document.getElementById('phone').value;
+            const hall = document.getElementById('hall').value;
+
+            document.getElementById('loadingBarContainer').style.display = 'block';
+            document.getElementById('loadingBar').style.width = '0';
+
+            const loadingInterval = setInterval(() => {
+                let width = parseFloat(document.getElementById('loadingBar').style.width);
+                if (width >= 100) {
+                    clearInterval(loadingInterval);
+                } else {
+                    document.getElementById('loadingBar').style.width = (width + 10) + '%';
+                }
+            }, 200);
+
+            fetch('https://script.google.com/macros/s/AKfycbw3zDE1o30Hk3ltBn1W_kFCZ5uesv9Shv0Yab4x9vOFdMPrXHoICQxcTWv-foetA76FSg/exec?action=submitPlayer&realName=' + encodeURIComponent(realName) + '&codename=' + encodeURIComponent(codename) + '&phone=' + encodeURIComponent(phone) + '&hall=' + encodeURIComponent(hall))
+                .then(response => response.json())
+                .then(data => {
+                    clearInterval(loadingInterval);
+                    document.getElementById('loadingBar').style.width = '100%';
+                    document.getElementById('loadingBarContainer').style.display = 'none';
+
+                    document.getElementById('confirmOutput').textContent = `
+                        Welcome to the game! Remember your codename!!!
+                        If you forget, please contact Austin. 
+                        You will be notified through the Floor 3 Squad chat of relevant information, including when the game will begin.
+                    `;
+
+                    // Hide the buttons after submission
+                    document.getElementById('confirmButton').style.display = 'none';
+                    document.getElementById('editButton').style.display = 'none';
+                })
+                .catch(error => {
+                    clearInterval(loadingInterval);
+                    document.getElementById('loadingBarContainer').style.display = 'none';
+
+                    console.error('Error:', error);
+                    document.getElementById('confirmOutput').textContent = 'Error submitting your information. Please try again.';
+                });
+        });
+
+        document.getElementById('editButton').addEventListener('click', function() {
+            document.getElementById('myForm').style.display = 'block';
+            document.getElementById('confirmation').style.display = 'none';
+        });
+    </script>
+
+</body>
+</html>
