@@ -28,6 +28,7 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
       width: 300px;
       margin-bottom: 20px;
+      position: relative; /* needed for spinner overlay */
     }
     label {
       text-align: center;
@@ -69,11 +70,35 @@
       width: 100%;
       text-align: center;
     }
-    #loading {
+    /* Spinner overlay style */
+    .loading {
       display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
       color: #fff;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px;
+      gap: 10px;
       font-weight: bold;
-      margin-top: 10px;
+      z-index: 10;
+    }
+    .spinner {
+      border: 4px solid #333;
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -81,13 +106,17 @@
 
   <div id="container">
     <h2>Mafia Dashboard</h2>
+
     <!-- Step One -->
     <div class="form-section" id="myForm">
       <label for="codename">Input your codename:</label>
       <input type="text" id="codename" required>
       <button onclick="verifyMafia()">Verify</button>
       <div id="stepOneMessage" class="output"></div>
-      <div id="loading" class="output">Loading...</div>
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>Loading...</div>
+      </div>
     </div>
 
     <!-- Step Two -->
@@ -96,14 +125,22 @@
       <input type="text" id="targetCodename" required>
       <button onclick="verifyTarget()">Verify Target</button>
       <div id="stepTwoMessage" class="output"></div>
-      <div id="loadingTarget" class="output" style="display: none;">Loading...</div>
+      <div id="loadingTarget" class="loading">
+        <div class="spinner"></div>
+        <div>Loading...</div>
+      </div>
     </div>
 
     <!-- Final Step -->
     <div class="form-section" id="confirmationSection" style="display: none;">
       <button onclick="eliminateTarget()">Eliminate Target</button>
       <div id="finalMessage" class="output"></div>
+      <div id="loadingEliminate" class="loading">
+        <div class="spinner"></div>
+        <div>Eliminating...</div>
+      </div>
     </div>
+
   </div>
 
   <script>
@@ -111,28 +148,26 @@
 
     async function verifyMafia() {
       const codename = document.getElementById('codename').value;
-      document.getElementById('loading').style.display = 'block';
+      document.getElementById('loading').style.display = 'flex';
       const res = await fetch(`${scriptURL}?action=verifyMafia&codename=${codename}`);
       const data = await res.json();
       document.getElementById('loading').style.display = 'none';
       document.getElementById('stepOneMessage').textContent = data.error || 'Codename verified';
       if (data.success) {
         document.getElementById('targetSection').style.display = 'block';
-        // Hide the verify button
         document.querySelector('#myForm button').style.display = 'none';
       }
     }
 
     async function verifyTarget() {
       const targetCodename = document.getElementById('targetCodename').value;
-      document.getElementById('loadingTarget').style.display = 'block';
+      document.getElementById('loadingTarget').style.display = 'flex';
       const res = await fetch(`${scriptURL}?action=verifyTarget&targetCodename=${targetCodename}`);
       const data = await res.json();
       document.getElementById('loadingTarget').style.display = 'none';
       document.getElementById('stepTwoMessage').textContent = data.error || 'Target verified';
       if (data.success) {
         document.getElementById('confirmationSection').style.display = 'block';
-        // Hide the verify target button
         document.querySelector('#targetSection button').style.display = 'none';
       }
     }
@@ -140,11 +175,16 @@
     async function eliminateTarget() {
       const codename = document.getElementById('codename').value;
       const targetCodename = document.getElementById('targetCodename').value;
+      const loading = document.getElementById('loadingEliminate');
+      loading.style.display = 'flex'; // show spinner overlay
+
       const res = await fetch(`${scriptURL}?action=eliminateTarget&codename=${codename}&targetCodename=${targetCodename}`);
       const data = await res.json();
+
+      loading.style.display = 'none'; // hide spinner
       document.getElementById('finalMessage').textContent = data.success || data.error;
+
       if (data.success) {
-        // Hide the eliminate target button
         document.querySelector('#confirmationSection button').style.display = 'none';
       }
     }
