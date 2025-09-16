@@ -69,18 +69,23 @@
       width: 100%;
       text-align: center;
     }
-    #loading, #loading2, #loading3, #loadingTarget {
-      display: none;
-      color: #fff;
-      font-weight: bold;
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #fff;
-      background-color: #333;
-      border-radius: 4px;
-      width: 100%;
-      text-align: center;
+
+    /* Spinner styles */
+    .loader {
+      border: 4px solid #444; /* Background circle */
+      border-top: 4px solid #76c7c0; /* Spinning part */
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+      display: none; /* Hidden by default */
     }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     /* Loading bar styles */
     #eliminationLoading {
       width: 100%;
@@ -110,7 +115,7 @@
       <input type="text" id="codename1" required>
       <button onclick="verifyCitizen('verifyCitizen1', 'codename1', 'stepOneMessage')">Verify</button>
       <div id="stepOneMessage" class="output"></div>
-      <div id="loading" class="output">Loading...</div>
+      <div id="loading" class="loader"></div>
     </div>
 
     <!-- Step Two -->
@@ -119,7 +124,7 @@
       <input type="text" id="codename2" required>
       <button onclick="verifyCitizen('verifyCitizen2', 'codename2', 'stepTwoMessage')">Verify</button>
       <div id="stepTwoMessage" class="output"></div>
-      <div id="loading2" class="output">Loading...</div>
+      <div id="loading2" class="loader"></div>
     </div>
 
     <!-- Step Three -->
@@ -128,7 +133,7 @@
       <input type="text" id="codename3" required>
       <button onclick="verifyCitizen('verifyCitizen3', 'codename3', 'stepThreeMessage')">Verify</button>
       <div id="stepThreeMessage" class="output"></div>
-      <div id="loading3" class="output">Loading...</div>
+      <div id="loading3" class="loader"></div>
     </div>
 
     <!-- Step Four -->
@@ -137,7 +142,7 @@
       <input type="text" id="targetName" required>
       <button onclick="verifyTarget()">Verify Target</button>
       <div id="targetMessage" class="output"></div>
-      <div id="loadingTarget" class="output">Loading...</div>
+      <div id="loadingTarget" class="loader"></div>
     </div>
 
     <!-- Final Step -->
@@ -156,7 +161,7 @@
     async function verifyCitizen(action, codenameId, messageId) {
       const codename = document.getElementById(codenameId).value;
 
-      // Show appropriate loading indicator
+      // Show appropriate loading spinner
       if (action === 'verifyCitizen1') {
         document.getElementById('loading').style.display = 'block';
       } else if (action === 'verifyCitizen2') {
@@ -168,7 +173,7 @@
       const res = await fetch(`${scriptURL}?action=${action}&codename=${codename}`);
       const data = await res.json();
 
-      // Hide appropriate loading indicator
+      // Hide loading spinner
       if (action === 'verifyCitizen1') {
         document.getElementById('loading').style.display = 'none';
       } else if (action === 'verifyCitizen2') {
@@ -182,26 +187,26 @@
       if (data.success) {
         if (action === 'verifyCitizen1') {
           document.getElementById('myForm2').style.display = 'block';
-          document.querySelector('#myForm button').style.display = 'none'; // Hide button
+          document.querySelector('#myForm button').style.display = 'none'; 
         } else if (action === 'verifyCitizen2') {
           document.getElementById('myForm3').style.display = 'block';
-          document.querySelector('#myForm2 button').style.display = 'none'; // Hide button
+          document.querySelector('#myForm2 button').style.display = 'none';
         } else if (action === 'verifyCitizen3') {
           document.getElementById('targetSection').style.display = 'block';
-          document.querySelector('#myForm3 button').style.display = 'none'; // Hide button
+          document.querySelector('#myForm3 button').style.display = 'none';
         }
       }
     }
 
     async function verifyTarget() {
       const targetOfficialName = document.getElementById('targetName').value;
-      document.getElementById('loadingTarget').style.display = 'block'; // Show loading for target
+      document.getElementById('loadingTarget').style.display = 'block'; 
       const res = await fetch(`${scriptURL}?action=verifyTarget&targetOfficialName=${targetOfficialName}`);
       const data = await res.json();
-      document.getElementById('loadingTarget').style.display = 'none'; // Hide loading for target
+      document.getElementById('loadingTarget').style.display = 'none'; 
       document.getElementById('targetMessage').textContent = data.error || 'Target verified!';
       if (data.success) {
-        document.getElementById('confirmationSection').style.display = 'block'; // Show confirmation section
+        document.getElementById('confirmationSection').style.display = 'block'; 
       }
     }
 
@@ -211,15 +216,12 @@
       const codename3 = document.getElementById('codename3').value;
       const targetOfficialName = document.getElementById('targetName').value;
 
-      // Show loading bar
       document.getElementById('eliminationLoading').style.display = 'block';
       const progressBar = document.getElementById('eliminationProgress');
-      progressBar.style.width = '0%'; // Reset progress
+      progressBar.style.width = '0%'; 
 
-      // Send the request
       const res = await fetch(`${scriptURL}?action=eliminateTarget&codename=${codename1}&targetOfficialName=${targetOfficialName}&codename2=${codename2}&codename3=${codename3}`);
       
-      // Simulate loading progress
       let width = 0;
       const loadingInterval = setInterval(() => {
         if (width >= 100) {
@@ -228,20 +230,19 @@
           width++;
           progressBar.style.width = width + '%';
         }
-      }, 30); // Adjust speed as needed
+      }, 30);
 
       const data = await res.json();
-      clearInterval(loadingInterval); // Stop loading simulation
-      progressBar.style.width = '100%'; // Complete the loading bar
+      clearInterval(loadingInterval);
+      progressBar.style.width = '100%'; 
 
-      // Hide loading bar after a brief delay
       setTimeout(() => {
-        document.getElementById('eliminationLoading').style.display = 'none'; // Hide loading bar
-      }, 300); // Adjust the duration as needed
+        document.getElementById('eliminationLoading').style.display = 'none'; 
+      }, 300); 
 
       document.getElementById('finalMessage').textContent = data.success || data.error;
       if (data.success) {
-        document.querySelector('#confirmationSection button').style.display = 'none'; // Hide button
+        document.querySelector('#confirmationSection button').style.display = 'none'; 
       }
     }
   </script>
