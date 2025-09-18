@@ -161,10 +161,6 @@
     if (data.success) {
       // Hide the guess target button
       document.querySelector('#confirmationSection button').style.display = 'none';
-      // Auto-refresh if the guess was successful
-      setTimeout(() => {
-        location.reload(); // Refresh the page after 3 seconds
-      }, 3000); // Adjust the time as needed
     }
   }
 </script>
